@@ -1,0 +1,114 @@
+provider.tf
+**************
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=2.97.0"
+    }
+  }
+}
+
+provider "azurerm" {
+
+  features {}
+  subscription_id = "d968920e-a945-40f3-9675-a95a54369a29"
+  tenant_id       = "92e84ceb-fbfd-47ab-be52-080c6b87953f"
+
+}
+**********************************************************************************************
+
+main.tf
+*************
+
+resource "azurerm_resource_group" "app_grp"{
+  name= var.resource_group_name
+  location= var.location
+}
+resource "azurerm_virtual_network" "lbvnet" {
+  name                = var.lbvnetname
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  address_space       = var.vnetcidrblock
+
+}
+
+resource "azurerm_subnet" "Subneta" {
+  name                 = "var.subnetname"
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.lbvnet.name
+  address_prefixes     = var.subnetcidrblock
+}
+
+resource "azurerm_lb" "lb" {
+  name                = var.lb_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  sku = "Standard"
+
+  frontend_ip_configuration {
+    name                 = "PublicIPAddress"
+    subnet_id = azurerm_subnet.Subneta.id
+    private_ip_address = var.private_ip_address
+  }
+  
+}
+*************************************************
+variable.tf
+***********
+    variable "lb_name" {
+     type = string
+     default = 	"azurelbtest"
+}	 
+    variable "resource_group_name" {
+     type = string
+     default = 	"app-grp"
+}	 
+    variable "location" {
+     type = string
+     default = 	"North Europe"
+}
+    variable "subnet_name"  {
+     type = string
+     default = 	"North Europe"
+}
+    variable "frontends_ip_configuration" {
+     type = string
+     default = 	"North Europe"
+}
+    variable "fi_name" {
+     type = string
+     default = 	"North Europe"
+}
+    variable "private_ip_address" {
+     type = string
+     default = 	"North Europe"
+}
+    variable "private_ip_address_allocation"  {
+     type = string
+     default = 	"North Europe"
+}
+    variable "private_ip_address_version"  {
+     type = string
+     default = 	"North Europe"
+}
+
+variable "lbvnetname" {
+     type = string
+     default = 	"lbvnetwork"
+}
+  
+variable "vnetcidrblock" {
+    type = list(string)
+    default = ["10.0.0.0/26"]
+}
+variable "subnetcidrblock" {
+    type = list(string)
+ default = ["10.0.0.0/28"]
+}
+
+variable "subnetname" {
+    type = string
+    default = "lbsubnet"
+  
+}
